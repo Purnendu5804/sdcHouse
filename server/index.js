@@ -15,11 +15,25 @@ const io = new Server(server , {
   }
 });
 
+//this is our temp db
+const players = {};
+
 io.on('connection' , (socket) => {
   console.log(`User Connected : ${socket.id}`);
 
+  //add new player to our players obj
+  players[socket.id] = {x : 0 , y : 0};
+  io.emit('stateUpdate' , players) // tell everyone
+
+  socket.on('move' , (newPosition) => {
+    players[socket.id] = newPosition;
+    io.emit('stateUpdate' , players);
+  });
+
   socket.on('disconnect' , () => {
     console.log(`User Disconnected : ${socket.id}`);
+    delete players[socket.id];
+    io.emit('stateUpdate' , players);
   });
 });
 
