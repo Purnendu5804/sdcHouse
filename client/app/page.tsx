@@ -1,9 +1,8 @@
 "use client";
 
 import {io , Socket} from "socket.io-client";
-import { useEffect , useEffectEvent, useState } from "react";
+import { useEffect , useRef, useState } from "react";
 
-const socket:Socket = io("http://localhost:3001");
 
 //constants for out room physics
 const BOARD_SIZE = 500;
@@ -11,27 +10,42 @@ const DOT_SIZE = 25;
 const STEP_SIZE = 25;
 
 
+type PlayerPosition = {x : number , y : number};
+
+
 export default function Home () {
   const [isConnected , setIsConnected] = useState<boolean>(false);
 
-  //track where our local dot is
+  //humara local dot kaha pe hai
   const[position , setPosition] = useState({x : 0 , y : 0});
+  // doosre players ko set karne ke liye
+  const[otherPlayers , setOtherPlayers] = useState<Record<string , PlayerPosition>>({});
 
-  useEffect(() => {
-    socket.on("connect" , () => {
-      setIsConnected(true);
-      console.log("Connected to sdcHouse server !");
-    });
+  // use a ref to hold the socket instance so it persists across renders
+  const socketRef  = useRef<Socket | null>(null);
 
-    socket.on("disconnect" , () => {
-      setIsConnected(false);
-    });
+useEffect(() => {
 
+  // connect inside the component lifecycle
+  socketRef.current = io("http://localhost:3001");
+  socketRef.current.on("connect" , () => setIsConnected(true));
+  socketRef.current.on("disconnect" , () => setIsConnected(false));
+
+  //listen the master list of players from the server
+  socketRef.current.on("stateUpdate" , (players : Record<string , PlayerPosition>) => {
+    const playersCopy = {...players};
+    // remove ourselves from this copy
+    if (socketRef.current?.id) {
+      delete playersCopy[socketRef.current.id];
+    }
+    setOtherPlayers(playersCopy);
+  });
+
+  // CRITICAL: Clean up the connection when Next.js reloads the component
     return () => {
-      socket.off("connect");
-      socket.off("disconnect");
+      socketRef.current?.disconnect();
     };
-  } , []);
+} , []);
 
   // handle keyboard movement
   useEffect(()=> {
@@ -51,6 +65,12 @@ export default function Home () {
         if(e.key == "ArrowLeft") newX = Math.max(0 , prev.x - STEP_SIZE);
         if(e.key == "ArrowRight") newX = Math.min(BOARD_SIZE - DOT_SIZE , prev.x + STEP_SIZE);
 
+
+        //tell server that we moved !
+        if(socketRef.current) {
+          socketRef.current.emit("move" , {x : newX , y : newY})
+        }
+
         return {x : newX , y : newY};
       });
     };
@@ -68,14 +88,26 @@ export default function Home () {
         </p>
       </div>
 
-      {/* The Room Container */}
       <div 
         className="relative bg-gray-800 border-4 border-gray-700 rounded-lg shadow-2xl overflow-hidden"
         style={{ width: BOARD_SIZE, height: BOARD_SIZE }}
       >
-        {/* The Player Dot */}
+        {/* Render Other Players (Red Dots) */}
+        {Object.entries(otherPlayers).map(([id, pos]) => (
+          <div
+            key={id}
+            className="absolute bg-red-500 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-transform duration-100 ease-linear"
+            style={{
+              width: DOT_SIZE,
+              height: DOT_SIZE,
+              transform: `translate(${pos.x}px, ${pos.y}px)`,
+            }}
+          />
+        ))}
+
+        {/* Render Local Player (Blue Dot) */}
         <div
-          className="absolute bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-transform duration-100 ease-linear"
+          className="absolute bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-transform duration-100 ease-linear z-10"
           style={{
             width: DOT_SIZE,
             height: DOT_SIZE,
@@ -87,6 +119,4 @@ export default function Home () {
       <p className="mt-6 text-gray-400 font-mono">Use Arrow Keys to move around</p>
     </div>
   );
-
-
 }

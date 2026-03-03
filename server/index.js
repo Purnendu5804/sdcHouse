@@ -39,4 +39,4 @@ io.on('connection' , (socket) => {
 
 server.listen(3001 , () =>{
   console.log('sdcHouse server running on port 3001');
-})
+}) 
