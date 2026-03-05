@@ -2,6 +2,7 @@
 
 import {io , Socket} from "socket.io-client";
 import { useEffect , useRef, useState } from "react";
+import Player from "./components/Player";
 
 
 //constants for out room physics
@@ -42,6 +43,7 @@ useEffect(() => {
   });
 
   // CRITICAL: Clean up the connection when Next.js reloads the component
+  // ye hot fast refresh se connection band karne ke liye
     return () => {
       socketRef.current?.disconnect();
     };
@@ -92,28 +94,13 @@ useEffect(() => {
         className="relative bg-gray-800 border-4 border-gray-700 rounded-lg shadow-2xl overflow-hidden"
         style={{ width: BOARD_SIZE, height: BOARD_SIZE }}
       >
-        {/* Render Other Players (Red Dots) */}
+        {/* Render Other Players */}
         {Object.entries(otherPlayers).map(([id, pos]) => (
-          <div
-            key={id}
-            className="absolute bg-red-500 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.6)] transition-transform duration-100 ease-linear"
-            style={{
-              width: DOT_SIZE,
-              height: DOT_SIZE,
-              transform: `translate(${pos.x}px, ${pos.y}px)`,
-            }}
-          />
+          <Player key={id} x={pos.x} y={pos.y} color="#ef4444" />
         ))}
 
-        {/* Render Local Player (Blue Dot) */}
-        <div
-          className="absolute bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.6)] transition-transform duration-100 ease-linear z-10"
-          style={{
-            width: DOT_SIZE,
-            height: DOT_SIZE,
-            transform: `translate(${position.x}px, ${position.y}px)`,
-          }}
-        />
+        {/* Render Local Player */}
+        <Player x={position.x} y={position.y} color="#3b82f6" />
       </div>
       
       <p className="mt-6 text-gray-400 font-mono">Use Arrow Keys to move around</p>
