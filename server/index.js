@@ -21,13 +21,28 @@ const players = {};
 io.on('connection' , (socket) => {
   console.log(`User Connected : ${socket.id}`);
 
-  //add new player to our players obj
-  players[socket.id] = {x : 0 , y : 0};
-  io.emit('stateUpdate' , players) // tell everyone
+  // //add new player to our players obj
+  // players[socket.id] = {x : 0 , y : 0};
+  // io.emit('stateUpdate' , players) // tell everyone
 
-  socket.on('move' , (newPosition) => {
-    players[socket.id] = newPosition;
-    io.emit('stateUpdate' , players);
+  // wait for the user to submit their name from the Lobby
+  socket.on('join', (username) => {
+    players[socket.id] = { x: 0, y: 0, username: username };
+    io.emit('stateUpdate', players);
+    console.log(`${username} joined sdcHouse!`);
+  });
+
+  // socket.on('move' , (newPosition) => {
+  //   players[socket.id] = newPosition;
+  //   io.emit('stateUpdate' , players);
+  // });
+
+  socket.on("move" , (newPosition) => {
+    if(players[socket.id]) {
+      players[socket.id].x = newPosition.x;
+      players[socket.id].y = newPosition.y;
+      io.emit('stateUpdate' , players);
+    }
   });
 
   socket.on('disconnect' , () => {
