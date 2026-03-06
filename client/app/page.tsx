@@ -4,6 +4,7 @@ import {io , Socket} from "socket.io-client";
 import { useEffect , useRef, useState } from "react";
 import Player from "./components/Player";
 import Lobby from "./components/Lobby";
+import GameBoard from "./components/GameBoard";
 
 
 //constants for out room physics
@@ -12,7 +13,7 @@ const DOT_SIZE = 25;
 const STEP_SIZE = 25;
 
 
-type PlayerPosition = {x : number , y : number , username: string};
+type PlayerPosition = {x : number , y : number , username?: string};
 
 
 export default function Home () {
@@ -103,22 +104,12 @@ useEffect(() => {
           }}
         />
       ) : (
-        <>
-          <div 
-            className="relative bg-gray-800 border-4 border-gray-700 rounded-lg shadow-2xl overflow-hidden"
-            style={{ width: BOARD_SIZE, height: BOARD_SIZE }}
-          >
-            {/* Render Other Players */}
-            {Object.entries(otherPlayers).map(([id, pos ]) => (
-              <Player key={id} x={pos.x} y={pos.y} color="#ef4444" name={pos.username} />
-            ))}
-
-            {/* Render Local Player */}
-            <Player x={position.x} y={position.y} color="#3b82f6" name={username} />
-          </div>
-          
-          <p className="mt-6 text-gray-400 font-mono">Use Arrow Keys to move around</p>
-        </>
+        <GameBoard 
+          position={position}
+          otherPlayers={otherPlayers}
+          username = {username}
+          boardSize={BOARD_SIZE}
+        />
       )}
     </div>
   );
