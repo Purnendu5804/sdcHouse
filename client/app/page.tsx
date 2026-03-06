@@ -5,6 +5,7 @@ import { useEffect , useRef, useState } from "react";
 import Player from "./components/Player";
 import Lobby from "./components/Lobby";
 import GameBoard from "./components/GameBoard";
+import ChatBox , {ChatMessage} from "./components/ChatBox";
 
 
 //constants for out room physics
@@ -26,6 +27,9 @@ export default function Home () {
   // doosre players ko set karne ke liye
   const[otherPlayers , setOtherPlayers] = useState<Record<string , PlayerPosition>>({});
 
+
+  const [messages , setMessages] = useState<ChatMessage[]>([]);
+
   // use a ref to hold the socket instance so it persists across renders
   const socketRef  = useRef<Socket | null>(null);
 
@@ -46,10 +50,16 @@ useEffect(() => {
     setOtherPlayers(playersCopy);
   });
 
+  //listen for new chat
+  socketRef.current.on("newChat" ,(msg : ChatMessage) => {
+    setMessages((prev) => [...prev , msg]);
+  })
+
   // CRITICAL: Clean up the connection when Next.js reloads the component
   // ye hot fast refresh se connection band karne ke liye
     return () => {
       socketRef.current?.disconnect();
+      socketRef.current?.off("newChat");
     };
 } , []);
 
@@ -104,12 +114,22 @@ useEffect(() => {
           }}
         />
       ) : (
-        <GameBoard 
+        <div className="flex flex-row items-start justify-center">
+          <GameBoard 
           position={position}
           otherPlayers={otherPlayers}
           username = {username}
           boardSize={BOARD_SIZE}
         />
+
+        <ChatBox
+          messages={messages}
+          onSendMessage={(text) => socketRef.current?.emit("sendChat" , text)}
+          localSocketId={socketRef.current?.id}
+        />
+        </div>
+        
+      
       )}
     </div>
   );

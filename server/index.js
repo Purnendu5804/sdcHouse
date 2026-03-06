@@ -22,8 +22,6 @@ io.on('connection' , (socket) => {
   console.log(`User Connected : ${socket.id}`);
 
   // //add new player to our players obj
-  // players[socket.id] = {x : 0 , y : 0};
-  // io.emit('stateUpdate' , players) // tell everyone
 
   // wait for the user to submit their name from the Lobby
   socket.on('join', (username) => {
@@ -44,6 +42,21 @@ io.on('connection' , (socket) => {
       io.emit('stateUpdate' , players);
     }
   });
+
+  //listening chat message
+  socket.on("sendChat" ,(text) => {
+    if(players[socket.id]) { // checking players exist
+      const messageData = {
+        id : socket.id,
+        name : players[socket.id].username,
+        text : text,
+        //clean time format
+        time : new Date().toLocaleTimeString([] , {hour : '2-digit' , minute: '2-digit'})
+      };
+
+      io.emit('newChat' , messageData);
+    }
+  })
 
   socket.on('disconnect' , () => {
     console.log(`User Disconnected : ${socket.id}`);
