@@ -6,12 +6,16 @@ import Player from "./components/Player";
 import Lobby from "./components/Lobby";
 import GameBoard from "./components/GameBoard";
 import ChatBox , {ChatMessage} from "./components/ChatBox";
+import { calculateDistance } from "./utils/distance";
 
 
 //constants for out room physics
 const BOARD_SIZE = 500;
 const DOT_SIZE = 25;
 const STEP_SIZE = 25;
+
+
+const PROXIMITY_THRESHOLD = 35;
 
 
 type PlayerPosition = {x : number , y : number , username?: string};
@@ -98,6 +102,20 @@ useEffect(() => {
     window.addEventListener("keydown" , handleKeyDown);
     return () => window.removeEventListener("keydown" , handleKeyDown);
   } , []);
+
+  // to calculate proximity everytime
+  useEffect(() => {
+    if(!hasJoined) return ;
+
+    Object.entries(otherPlayers).forEach(([id , player]) => {
+      const dist = calculateDistance(position , player);
+
+
+      if(dist < PROXIMITY_THRESHOLD) {
+        console.log(`You are close to ${player.username || "Guest"}! (Distance: ${Math.round(dist)}px)`);
+      }
+    })
+  }, [position, otherPlayers , hasJoined]);
 
 
   // audio request
