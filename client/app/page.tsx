@@ -33,6 +33,10 @@ export default function Home () {
   // use a ref to hold the socket instance so it persists across renders
   const socketRef  = useRef<Socket | null>(null);
 
+
+  // state to hold audio stream
+  const[localStream , setLocalStream] = useState<MediaStream | null > (null);
+
 useEffect(() => {
 
   // connect inside the component lifecycle
@@ -95,6 +99,23 @@ useEffect(() => {
     return () => window.removeEventListener("keydown" , handleKeyDown);
   } , []);
 
+
+  // audio request
+  const initialiseMedia = async() => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio : true,
+        video : false
+      });
+
+      setLocalStream(stream);
+      console.log("Microphone access granted !");
+    } catch(err) {
+      console.error("Error accessing microphone:" , err) ;
+      alert("We need microphone access for proximity chat to work!")
+    }
+  }
+
  return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
       <div className="mb-6">
@@ -109,8 +130,12 @@ useEffect(() => {
           username={username}
           setUsername={setUsername}
           onJoin={() => {
-            socketRef.current?.emit("join" , username);
-            setHasJoined(true);
+            if (username.trim()) {
+              socketRef.current?.emit("join" , username);
+              setHasJoined(true);
+              // ask for mic permission right after joining
+              initialiseMedia();
+            }
           }}
         />
       ) : (

@@ -27,7 +27,7 @@ export default function GameBoard({ position, otherPlayers, username, boardSize 
         <Player x={position.x} y={position.y} color="#3b82f6" name={username} />
       </div>
       
-      <p className="mt-6 text-gray-400 font-mono">Use Arrow Keys to move around</p>
+
     </>
   );
 }
