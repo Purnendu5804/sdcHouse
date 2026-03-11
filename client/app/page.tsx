@@ -133,6 +133,73 @@ useEffect(() => {
   }, [position, otherPlayers , hasJoined , localStream]);
 
 
+  //incoming WebRTC Signaling
+  useEffect(() => {
+    if (!socketRef.current || !localStream) return;
+
+    //handling an Incoming Call (The Offer)
+    const handleReceiveOffer = async ({ senderId, offer }: { senderId: string, offer: RTCSessionDescriptionInit }) => {
+      // Create a new connection for this caller
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+      });
+      peersRef.current.set(senderId, pc);
+
+      // Add our mic audio to send back to them
+      localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+      // Handle their network paths
+      pc.onicecandidate = (event) => {
+        if (event.candidate) {
+          socketRef.current?.emit("webrtc-ice-candidate", { targetId: senderId, candidate: event.candidate });
+        }
+      };
+
+      //play their audio when we receive it
+      pc.ontrack = (event) => {
+        const audio = new Audio();
+        audio.srcObject = event.streams[0];
+        audio.play().catch(e => console.error("Audio play failed:", e));
+      };
+
+     
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      
+      socketRef.current?.emit("webrtc-answer", { targetId: senderId, answer });
+    };
+
+    
+    const handleReceiveAnswer = async ({ senderId, answer }: { senderId: string, answer: RTCSessionDescriptionInit }) => {
+      const pc = peersRef.current.get(senderId);
+      if (pc) {
+        await pc.setRemoteDescription(new RTCSessionDescription(answer));
+      }
+    };
+
+    // handling ICE Candidates 
+    const handleReceiveIce = async ({ senderId, candidate }: { senderId: string, candidate: RTCIceCandidateInit }) => {
+      const pc = peersRef.current.get(senderId);
+      if (pc) {
+        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+    };
+
+    // Attach the listeners
+    socketRef.current.on("webrtc-offer", handleReceiveOffer);
+    socketRef.current.on("webrtc-answer", handleReceiveAnswer);
+    socketRef.current.on("webrtc-ice-candidate", handleReceiveIce);
+
+    // Cleanup listeners so we don't get duplicates if React re-renders
+    return () => {
+      socketRef.current?.off("webrtc-offer", handleReceiveOffer);
+      socketRef.current?.off("webrtc-answer", handleReceiveAnswer);
+      socketRef.current?.off("webrtc-ice-candidate", handleReceiveIce);
+    };
+  }, [localStream]); // This hook ONLY runs after localStream is set!
+
+
   // audio request
   const initialiseMedia = async() => {
     try {
