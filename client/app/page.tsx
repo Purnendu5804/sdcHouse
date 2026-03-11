@@ -7,6 +7,7 @@ import Lobby from "./components/Lobby";
 import GameBoard from "./components/GameBoard";
 import ChatBox , {ChatMessage} from "./components/ChatBox";
 import { calculateDistance } from "./utils/distance";
+import { eventNames } from "process";
 
 
 //constants for out room physics
@@ -40,6 +41,11 @@ export default function Home () {
 
   // state to hold audio stream
   const[localStream , setLocalStream] = useState<MediaStream | null > (null);
+
+  //socketId -> RTCPeerConnection
+  //track active connection so we don't try to call the same person several times;
+
+  const peersRef = useRef<Map<String , RTCPeerConnection>>(new Map());
 
 useEffect(() => {
 
@@ -105,17 +111,26 @@ useEffect(() => {
 
   // to calculate proximity everytime
   useEffect(() => {
-    if(!hasJoined) return ;
+    if(!hasJoined || !localStream) return ;
 
     Object.entries(otherPlayers).forEach(([id , player]) => {
       const dist = calculateDistance(position , player);
 
 
       if(dist < PROXIMITY_THRESHOLD) {
-        console.log(`You are close to ${player.username || "Guest"}! (Distance: ${Math.round(dist)}px)`);
+        //only initiates if my ID is greater then theirs , simple p2p handshake rule
+        if(socketRef.current?.id && socketRef.current.id > id) {
+          createPeerConnection(id);
+        }
+      } else {
+        //close connection if we walk away
+        if(peersRef.current.has(id)) {
+          peersRef.current.get(id)?.close();
+          peersRef.current.delete(id);
+        }
       }
     })
-  }, [position, otherPlayers , hasJoined]);
+  }, [position, otherPlayers , hasJoined , localStream]);
 
 
   // audio request
@@ -132,6 +147,42 @@ useEffect(() => {
       console.error("Error accessing microphone:" , err) ;
       alert("We need microphone access for proximity chat to work!")
     }
+  }
+
+
+  //webRTC call
+  const createPeerConnection = async(targetId : string) => {
+    if(peersRef.current.has(targetId)) return;
+
+    const pc = new RTCPeerConnection({
+      iceServers : [{urls : "stun:stun.l.google.com:19302"}] // stun server
+    });
+
+    peersRef.current.set(targetId , pc);
+
+    //add audio tracks to the connection
+    localStream?.getTracks().forEach(track => pc.addTrack(track , localStream));
+
+    //handle ICE Candidates
+    pc.onicecandidate = (event) => {
+      if(event.candidate) {
+        socketRef.current?.emit("webrtc-ice-candidate" , {targetId , candidate : event.candidate});
+      }
+    };
+
+    //handle incoming audio
+    pc.ontrack = (event) => {
+      const remoteStream = event.streams[0];
+      //play this audio
+      const audio = new Audio();
+      audio.srcObject = remoteStream;
+      audio.play();
+    };
+
+    //create offer and send
+    const offer = await pc.createOffer()
+    await pc.setLocalDescription(offer);
+    socketRef.current?.emit("webrtc-offer" , {targetId , offer});
   }
 
  return (

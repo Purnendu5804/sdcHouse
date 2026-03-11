@@ -58,6 +58,34 @@ io.on('connection' , (socket) => {
     }
   })
 
+
+  //webRTC logic 
+
+  //passing the offer
+  socket.on('webrtc-offer' , ({targetId , offer}) => {
+    //send it privately to the target
+    io.to(targetId).emit("webrtc-offer" , {
+      senderId : socket.id,
+      offer : offer
+    })
+  })
+
+  //passing the answer to the offer
+  socket.on('webrtc-answer' , ({targetId , answer}) => {
+    io.to(targetId).emit('webrtc-answer' , {
+      senderId : socket.id,
+      answer : answer
+    })
+  })
+
+  //passing the ICE candidates 
+  socket.on('webrtc-ice-candidate' , ({targetId , candidate}) => {
+    io.to(targetId).emit('webrtc-ice-candidate' , {
+      senderId : socket.id,
+      candidate : candidate
+    })
+  })
+
   socket.on('disconnect' , () => {
     console.log(`User Disconnected : ${socket.id}`);
     delete players[socket.id];
