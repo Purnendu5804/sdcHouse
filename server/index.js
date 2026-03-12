@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3001;
 
 const io = new Server(server , {
   cors : {
-    origin: "https://sdc-house.vercel.app/",
+    origin: ["https://sdc-house.vercel.app", "http://localhost:3000"],
     methods: ["GET" , "POST"]
   }
 });
