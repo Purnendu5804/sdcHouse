@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3001;
 
 const io = new Server(server , {
   cors : {
-    origin: "*",
+    origin: "https://sdc-house.vercel.app/",
     methods: ["GET" , "POST"]
   }
 });
@@ -95,6 +95,6 @@ io.on('connection' , (socket) => {
   });
 });
 
-server.listen(3001 , () =>{
+server.listen(PORT , () =>{
   console.log('sdcHouse server running on port 3001');
 }) 
