@@ -18,8 +18,6 @@ const DOT_SIZE = 25;
 const STEP_SIZE = 25;
 
 
-const PROXIMITY_THRESHOLD = 35;
-
 
 type PlayerPosition = {x : number , y : number , username?: string};
 
@@ -29,11 +27,6 @@ export default function Home () {
   
   const [username , setUsername] = useState<string>("");
   const [hasJoined , setHasJoined] = useState<boolean>(false);
-
-  // //humara local dot kaha pe hai
-  // const[position , setPosition] = useState({x : 0 , y : 0});
-  // // doosre players ko set karne ke liye
-  // const[otherPlayers , setOtherPlayers] = useState<Record<string , PlayerPosition>>({});
 
 
   const [messages , setMessages] = useState<ChatMessage[]>([]);
@@ -60,7 +53,8 @@ export default function Home () {
 useEffect(() => {
 
   // connect inside the component lifecycle
-  socketRef.current = io("http://localhost:3001");
+  const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "https://sdchouse.onrender.com";
+  socketRef.current = io(socketUrl);
   socketRef.current.on("connect" , () => setIsConnected(true));
   socketRef.current.on("disconnect" , () => setIsConnected(false));
   
