@@ -7,7 +7,8 @@ import Lobby from "./components/Lobby";
 import GameBoard from "./components/GameBoard";
 import ChatBox , {ChatMessage} from "./components/ChatBox";
 import { calculateDistance } from "./utils/distance";
-import { eventNames } from "process";
+import { useBoard } from "./hooks/useBoard";
+
 
 
 //constants for out room physics
@@ -27,8 +28,8 @@ export default function Home () {
   const [username , setUsername] = useState<string>("");
   const [hasJoined , setHasJoined] = useState<boolean>(false);
 
-  //humara local dot kaha pe hai
-  const[position , setPosition] = useState({x : 0 , y : 0});
+
+
   // doosre players ko set karne ke liye
   const[otherPlayers , setOtherPlayers] = useState<Record<string , PlayerPosition>>({});
 
@@ -77,37 +78,17 @@ useEffect(() => {
     };
 } , []);
 
-  // handle keyboard movement
-  useEffect(()=> {
-    const handleKeyDown = (e : KeyboardEvent) => {
-      //prevent browser from scrolling when using arrow keys
-      if(["ArrowUp" , "ArrowDown" , "ArrowLeft" , "ArrowRight"].includes(e.key)) {
-        e.preventDefault();
-      }
 
-      setPosition((prev) => {
-        let newX = prev.x;
-        let newY = prev.y;
-        
-
-        if(e.key == "ArrowUp") newY = Math.max(0 , prev.y - STEP_SIZE);
-        if(e.key == "ArrowDown") newY = Math.min(BOARD_SIZE - DOT_SIZE , prev.y + STEP_SIZE);
-        if(e.key == "ArrowLeft") newX = Math.max(0 , prev.x - STEP_SIZE);
-        if(e.key == "ArrowRight") newX = Math.min(BOARD_SIZE - DOT_SIZE , prev.x + STEP_SIZE);
-
-
-        //tell server that we moved !
-        if(socketRef.current) {
-          socketRef.current.emit("move" , {x : newX , y : newY})
-        }
-
-        return {x : newX , y : newY};
-      });
-    };
-
-    window.addEventListener("keydown" , handleKeyDown);
-    return () => window.removeEventListener("keydown" , handleKeyDown);
-  } , []);
+const { position } = useBoard({
+  BOARD_SIZE,
+  STEP_SIZE,
+  DOT_SIZE,
+  hasJoined,
+  onMove : (newPos) => {
+    socketRef.current?.emit("move" , newPos);
+  }
+})
+  
 
   // to calculate proximity everytime
   useEffect(() => {
