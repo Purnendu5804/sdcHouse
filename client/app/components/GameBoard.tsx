@@ -1,33 +1,41 @@
-import React from "react";
 import Player from "./Player";
 
-type PlayerPosition = {x : number ; y : number ; username?: string };
-
-type GameBoardProps = {
-    position : {x : number ; y : number};
-    otherPlayers : Record<string , PlayerPosition>;
-    username : string;
-    boardSize : number;
+interface GameBoardProps {
+  position: { x: number; y: number };
+  direction: 'up' | 'down' | 'left' | 'right';
+  otherPlayers: Record<string, any>;
+  username: string;
+  boardSize: number;
 }
 
-
-export default function GameBoard({ position, otherPlayers, username, boardSize }: GameBoardProps) {
+export default function GameBoard({ position, direction, otherPlayers, username, boardSize }: GameBoardProps) {
   return (
-    <>
-      <div 
-        className="relative bg-gray-800 border-4 border-gray-700 rounded-lg shadow-2xl overflow-hidden"
-        style={{ width: boardSize, height: boardSize }}
-      >
-        {/* Render Other Players */}
-        {Object.entries(otherPlayers).map(([id, pos]) => (
-          <Player key={id} x={pos.x} y={pos.y} color="#ef4444" name={pos.username || "Guest"} />
-        ))}
+    <div 
+      className="relative overflow-hidden border-2 border-slate-700 rounded-xl shadow-2xl"
+      style={{ 
+        width: `${boardSize}px`, 
+        height: `${boardSize}px`,
+        backgroundColor: '#0f172a', 
+        backgroundImage: `
+          linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+        `,
+        backgroundSize: '25px 25px' 
+      }}
+    >
+      {/* Local Player */}
+      <Player position={position} direction={direction} isLocal={true} username={username} />
 
-        {/* Render Local Player */}
-        <Player x={position.x} y={position.y} color="#3b82f6" name={username} />
-      </div>
-      
-
-    </>
+      {/* Remote Players */}
+      {Object.entries(otherPlayers).map(([id, player]) => (
+        <Player 
+          key={id} 
+          position={{ x: player.x, y: player.y }} 
+          direction={player.direction || 'down'} 
+          isLocal={false} 
+          username={player.username || "Unknown"} 
+        />
+      ))}
+    </div>
   );
 }

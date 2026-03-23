@@ -1,30 +1,44 @@
-import React from "react";
-
-type PlayerProps = {
-    x : number;
-    y : number;
-    color : string;
-    name : string;
+interface PlayerProps {
+  position: { x: number; y: number };
+  direction: 'up' | 'down' | 'left' | 'right';
+  isLocal: boolean;
+  username: string;
 }
 
-const DOT_SIZE = 25;
+export default function Player({ position, direction, isLocal, username }: PlayerProps) {
+  const size = 25; 
+  // calculate rotation for the vision indicator based on direction
+  const getRotation = () => {
+    switch(direction) {
+      case 'up': return 'rotate(-90deg)';
+      case 'down': return 'rotate(90deg)';
+      case 'left': return 'rotate(180deg)';
+      case 'right': return 'rotate(0deg)';
+      default: return 'rotate(90deg)';
+    }
+  };
 
-export default function Player({x , y , color , name} : PlayerProps) {
-    return (
-    <div
-      className={`absolute rounded-full transition-transform duration-100 ease-linear z-10`}
+  return (
+    <div 
+      className={`absolute rounded-full flex items-center justify-center transition-all duration-100 shadow-md ${isLocal ? 'bg-blue-500 z-20' : 'bg-red-500 z-10'}`}
       style={{
-        width: DOT_SIZE,
-        height: DOT_SIZE,
-        backgroundColor: color,
-        boxShadow: `0 0 15px ${color}`,
-        transform: `translate(${x}px, ${y}px)`,
+        width: `${size}px`,
+        height: `${size}px`,
+        transform: `translate(${position.x}px, ${position.y}px)`,
       }}
     >
-      {/* nama diya hai yaha pe */}
-      <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-white whitespace-nowrap bg-gray-900/50 px-1 rounded">
-        {name}
-      </span>
+      {/* The Vision Indicator */}
+      <div 
+        className="absolute w-full h-full transition-transform duration-150"
+        style={{ transform: getRotation() }}
+      >
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-sm translate-x-[2px]" />
+      </div>
+
+      {/* Username label */}
+      <div className="absolute -top-6 bg-gray-900/80 text-white text-[10px] font-mono px-2 py-0.5 rounded whitespace-nowrap pointer-events-none">
+        {username}
+      </div>
     </div>
   );
 }

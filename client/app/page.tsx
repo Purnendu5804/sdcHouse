@@ -80,7 +80,7 @@ useEffect(() => {
 } , []);
 
 // keyboard logic
-const { position } = useBoard({
+const { position , direction} = useBoard({
   BOARD_SIZE,
   STEP_SIZE,
   DOT_SIZE,
@@ -128,6 +128,7 @@ const { initialiseMedia } = UseWebRTC({
         <div className="flex flex-row items-start justify-center">
           <GameBoard 
           position={position}
+          direction={direction}
           otherPlayers={otherPlayers}
           username = {username}
           boardSize={BOARD_SIZE}
