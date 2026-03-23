@@ -6,14 +6,14 @@ import Player from "./components/Player";
 import Lobby from "./components/Lobby";
 import GameBoard from "./components/GameBoard";
 import ChatBox , {ChatMessage} from "./components/ChatBox";
+import PlayerList from "./components/PlayerList"; // Make sure to create this component!
 import { calculateDistance } from "./utils/distance";
 import { useBoard } from "./hooks/useBoard";
 import { useWebRTC } from "./hooks/useWebRTC"; // Note: conventionally hooks are lowercase 'useWebRTC'
 
 //constants for out room physics
-const BOARD_SIZE = 1080;
-const BOARD_WIDTH = 1920;
-const BOARD_HEIGHT = 2000;
+const BOARD_WIDTH = 1470;
+const BOARD_HEIGHT = 800;
 const DOT_SIZE = 25;
 const STEP_SIZE = 25;
 
@@ -25,7 +25,7 @@ export default function Home () {
   const [isConnected , setIsConnected] = useState<boolean>(false);
   const [username , setUsername] = useState<string>("");
   const [hasJoined , setHasJoined] = useState<boolean>(false);
-  const [isChatOpen , setIsChatOpen] = useState<boolean>(false);
+  
 
   // doosre players ko set karne ke liye
   const[otherPlayers , setOtherPlayers] = useState<Record<string , PlayerPosition>>({});
@@ -35,13 +35,9 @@ export default function Home () {
   // use a ref to hold the socket instance so it persists across renders
   const socketRef  = useRef<Socket | null>(null);
 
-  // state to hold audio stream (Note: If this is inside useWebRTC now, you can remove it here)
-  const[localStream , setLocalStream] = useState<MediaStream | null > (null);
+  const [isChatOpen , setIsChatOpen] = useState<boolean>(false);
+  const [isPlayerListOpen , setIsPlayerListOpen] = useState<boolean>(false);
 
-  //socketId -> RTCPeerConnection
-  //track active connection so we don't try to call the same person several times;
-  // (Note: If this is inside useWebRTC now, you can remove it here)
-  const peersRef = useRef<Map<String , RTCPeerConnection>>(new Map());
 
   useEffect(() => {
     // connect inside the component lifecycle
@@ -74,7 +70,8 @@ export default function Home () {
 
   // keyboard logic
   const { position , direction} = useBoard({
-    BOARD_SIZE,
+    BOARD_WIDTH,
+    BOARD_HEIGHT,
     STEP_SIZE,
     DOT_SIZE,
     hasJoined,
@@ -144,8 +141,31 @@ export default function Home () {
             </div>
           </div>
 
+          {/* HUD Overlay: Player List (Left Sidebar) */}
+          {isPlayerListOpen && (
+            <div className="absolute top-24 left-4 z-40 animate-in slide-in-from-left-5 fade-in duration-200">
+              <PlayerList 
+                localUsername={username} 
+                otherPlayers={otherPlayers} 
+              />
+            </div>
+          )}
+
           {/* HUD Overlay: Bottom Right (Action Buttons) */}
           <div className="absolute bottom-6 right-6 z-40 flex gap-3">
+             {/* Player List Toggle Button */}
+             <button 
+                onClick={() => setIsPlayerListOpen(!isPlayerListOpen)}
+                className={`p-4 rounded-full shadow-xl transition-all flex items-center justify-center ${isPlayerListOpen ? 'bg-slate-700 hover:bg-slate-600' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+             >
+                <div className="w-5 h-5 flex flex-col gap-1 justify-center items-center">
+                  <div className="w-4 h-1 bg-white rounded-full" />
+                  <div className="w-5 h-1 bg-white rounded-full" />
+                  <div className="w-4 h-1 bg-white rounded-full" />
+                </div>
+             </button>
+
+             {/* Chat Toggle Button */}
              <button 
                 onClick={() => setIsChatOpen(!isChatOpen)}
                 className={`p-4 rounded-full shadow-xl transition-all flex items-center justify-center ${isChatOpen ? 'bg-slate-700 hover:bg-slate-600' : 'bg-blue-600 hover:bg-blue-500'}`}

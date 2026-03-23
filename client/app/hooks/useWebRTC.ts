@@ -22,7 +22,9 @@ export const useWebRTC = ({
     position ,
     otherPlayers , 
 } : useWebRTCProps) => {
-    const [localStream , setLocalStream] = useState<MediaStream | null>(null)
+    const [localStream , setLocalStream] = useState<MediaStream | null>(null) //state to hold audio
+    //socketId -> RTCPeerConnection
+    //track active connection so we don't try to call the same person several times;
     const peersRef = useRef<Map<string , RTCPeerConnection>>(new Map());
 
     const initialiseMedia = async () => {
