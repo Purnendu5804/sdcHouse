@@ -7,7 +7,7 @@ export type PlayerPosition = {x : number ; y : number ; username?: string};
 
 const PROXIMITY_THRESHOLD =35;
 
-interface UseWebRTCProps {
+interface useWebRTCProps {
     socketRef : MutableRefObject<Socket | null>;
     isConnected : boolean,
     hasJoined : boolean,
@@ -15,13 +15,13 @@ interface UseWebRTCProps {
     otherPlayers : Record<string , PlayerPosition>;
 }
 
-export const UseWebRTC = ({
+export const useWebRTC = ({
     socketRef , 
     isConnected , 
     hasJoined , 
     position ,
     otherPlayers , 
-} : UseWebRTCProps) => {
+} : useWebRTCProps) => {
     const [localStream , setLocalStream] = useState<MediaStream | null>(null)
     const peersRef = useRef<Map<string , RTCPeerConnection>>(new Map());
 

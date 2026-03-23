@@ -5,16 +5,17 @@ interface GameBoardProps {
   direction: 'up' | 'down' | 'left' | 'right';
   otherPlayers: Record<string, any>;
   username: string;
-  boardSize: number;
+  boardWidth : number;
+  boardHeight : number
 }
 
-export default function GameBoard({ position, direction, otherPlayers, username, boardSize }: GameBoardProps) {
+export default function GameBoard({ position, direction, otherPlayers, username, boardHeight , boardWidth }: GameBoardProps) {
   return (
     <div 
       className="relative overflow-hidden border-2 border-slate-700 rounded-xl shadow-2xl"
       style={{ 
-        width: `${boardSize}px`, 
-        height: `${boardSize}px`,
+        width: `${boardWidth}px`, 
+        height: `${boardHeight}px`,
         backgroundColor: '#0f172a', 
         backgroundImage: `
           linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
