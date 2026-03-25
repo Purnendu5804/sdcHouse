@@ -2,9 +2,9 @@
 
 import {io , Socket} from "socket.io-client";
 import { useEffect , useRef, useState } from "react";
-import Player from "./components/Player";
+
 import Lobby from "./components/Lobby";
-import GameBoard from "./components/GameBoard";
+import GameBoard , {MapObject} from "./components/GameBoard";
 import ChatBox , {ChatMessage} from "./components/ChatBox";
 import PlayerList from "./components/PlayerList"; // Make sure to create this component!
 import { calculateDistance } from "./utils/distance";
@@ -18,6 +18,17 @@ const DOT_SIZE = 25;
 const STEP_SIZE = 25;
 
 const PROXIMITY_THRESHOLD = 35;
+
+const MAP_OBJECTS : MapObject[] = [
+  { id: 'table-1', type: 'table', x: 400, y: 300, width: 200, height: 100 },
+  // A smaller side desk
+  { id: 'table-2', type: 'table', x: 900, y: 150, width: 150, height: 75 },
+  // Some decorative plants in the corners
+  { id: 'plant-1', type: 'plant', x: 150, y: 150, width: 50, height: 50 },
+  { id: 'plant-2', type: 'plant', x: 1100, y: 600, width: 50, height: 50 },
+  // A nice rug in the center
+  { id: 'rug-1', type: 'rug', x: 350, y: 250, width: 300, height: 200 },
+];
 
 type PlayerPosition = {x : number , y : number , username?: string , color? : string , direction? : string};
 
@@ -130,6 +141,7 @@ export default function Home () {
               boardHeight={BOARD_HEIGHT}
               boardWidth={BOARD_WIDTH}
               color={selectedColor}
+              mapObjects={MAP_OBJECTS}
             />
           </div>
 
