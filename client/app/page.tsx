@@ -38,6 +38,8 @@ export default function Home () {
   const [isChatOpen , setIsChatOpen] = useState<boolean>(false);
   const [isPlayerListOpen , setIsPlayerListOpen] = useState<boolean>(false);
 
+  const[selectedColor , setSelectedColor] = useState<string>("#3b82f6");
+
 
   useEffect(() => {
     // connect inside the component lifecycle
@@ -102,9 +104,11 @@ export default function Home () {
           <Lobby 
             username={username}
             setUsername={setUsername}
+            selectedColor={selectedColor}
+            setSelectedColor={setSelectedColor}
             onJoin={() => {
               if (username.trim()) {
-                socketRef.current?.emit("join" , username);
+                socketRef.current?.emit("join" , {username , color : selectedColor});
                 setHasJoined(true);
                 // ask for mic permission right after joining
                 initialiseMedia();
@@ -125,6 +129,7 @@ export default function Home () {
               username={username}
               boardHeight={BOARD_HEIGHT}
               boardWidth={BOARD_WIDTH}
+              color={selectedColor}
             />
           </div>
 

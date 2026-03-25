@@ -3,11 +3,14 @@ interface PlayerProps {
   direction: 'up' | 'down' | 'left' | 'right';
   isLocal: boolean;
   username: string;
+  color?: string;
 }
 
-export default function Player({ position, direction, isLocal, username }: PlayerProps) {
+export default function Player({ position, direction, isLocal, username  , color}: PlayerProps) {
   const size = 25; 
   // calculate rotation for the vision indicator based on direction
+
+  const avatarColor = color || (isLocal ? "#3b82f6" : "ef4444");
   const getRotation = () => {
     switch(direction) {
       case 'up': return 'rotate(-90deg)';
@@ -20,11 +23,12 @@ export default function Player({ position, direction, isLocal, username }: Playe
 
   return (
     <div 
-      className={`absolute rounded-full flex items-center justify-center transition-all duration-100 shadow-md ${isLocal ? 'bg-blue-500 z-20' : 'bg-red-500 z-10'}`}
+      className={`absolute rounded-full flex items-center justify-center transition-all duration-100 shadow-md ${isLocal ? 'z-20' : 'z-10'}`}
       style={{
         width: `${size}px`,
         height: `${size}px`,
         transform: `translate(${position.x}px, ${position.y}px)`,
+        backgroundColor: avatarColor, // Apply the dynamic color here!
       }}
     >
       {/* The Vision Indicator */}

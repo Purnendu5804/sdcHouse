@@ -23,11 +23,20 @@ io.on('connection' , (socket) => {
 
   // //add new player to our players obj
 
-  // wait for the user to submit their name from the Lobby
-  socket.on('join', (username) => {
-    players[socket.id] = { x: 0, y: 0, username: username };
-    io.emit('stateUpdate', players);
-    console.log(`${username} joined sdcHouse!`);
+  // wait for the user to submit their name from the Lobby , and now they have to submit their color also
+  socket.on('join', (userData) => {
+    const isObject = typeof userData === "object";
+    const name = isObject ? userData.username : userData;
+    const color = isObject ? userData.color : "#3b82f6";
+    players[socket.id] = {
+      x : 0,
+      y : 0,
+      username : userData.username,
+      color : userData.color,
+      direction: 'down' //default direction
+    };
+    io.emit('stateUpdate' , players);
+    console.log(`${userData.username} joined sdcHouse `)
   });
 
   // socket.on('move' , (newPosition) => {
@@ -37,9 +46,13 @@ io.on('connection' , (socket) => {
 
   socket.on("move" , (newPosition) => {
     if(players[socket.id]) {
-      players[socket.id].x = newPosition.x;
-      players[socket.id].y = newPosition.y;
-      io.emit('stateUpdate' , players);
+      players[socket.id] = {
+        ...players[socket.id],
+        x : newPosition.x,
+        y : newPosition.y,
+        direction : newPosition.direction || players[socket.id].direction
+      };
+      io.emit('stateUpdate' , players)
     }
   });
 

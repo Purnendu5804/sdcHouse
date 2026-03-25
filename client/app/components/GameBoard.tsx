@@ -6,10 +6,11 @@ interface GameBoardProps {
   otherPlayers: Record<string, any>;
   username: string;
   boardWidth : number;
-  boardHeight : number
+  boardHeight : number;
+  color : string;
 }
 
-export default function GameBoard({ position, direction, otherPlayers, username, boardHeight , boardWidth }: GameBoardProps) {
+export default function GameBoard({ position, direction, otherPlayers, username, boardHeight , boardWidth, color }: GameBoardProps) {
   return (
     <div 
       className="relative overflow-hidden border-2 border-slate-700 rounded-xl shadow-2xl"
@@ -25,7 +26,7 @@ export default function GameBoard({ position, direction, otherPlayers, username,
       }}
     >
       {/* Local Player */}
-      <Player position={position} direction={direction} isLocal={true} username={username} />
+      <Player position={position} direction={direction} isLocal={true} username={username} color={color} />
 
       {/* Remote Players */}
       {Object.entries(otherPlayers).map(([id, player]) => (
@@ -35,6 +36,7 @@ export default function GameBoard({ position, direction, otherPlayers, username,
           direction={player.direction || 'down'} 
           isLocal={false} 
           username={player.username || "Unknown"} 
+          color={color}
         />
       ))}
     </div>
