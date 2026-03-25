@@ -36,7 +36,7 @@ export default function GameBoard({ position, direction, otherPlayers, username,
           direction={player.direction || 'down'} 
           isLocal={false} 
           username={player.username || "Unknown"} 
-          color={color}
+          color={player.color}
         />
       ))}
     </div>

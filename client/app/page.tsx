@@ -19,7 +19,7 @@ const STEP_SIZE = 25;
 
 const PROXIMITY_THRESHOLD = 35;
 
-type PlayerPosition = {x : number , y : number , username?: string};
+type PlayerPosition = {x : number , y : number , username?: string , color? : string , direction? : string};
 
 export default function Home () {
   const [isConnected , setIsConnected] = useState<boolean>(false);
@@ -108,7 +108,7 @@ export default function Home () {
             setSelectedColor={setSelectedColor}
             onJoin={() => {
               if (username.trim()) {
-                socketRef.current?.emit("join" , {username , color : selectedColor});
+                socketRef.current?.emit("join" , {username : username , color : selectedColor});
                 setHasJoined(true);
                 // ask for mic permission right after joining
                 initialiseMedia();
