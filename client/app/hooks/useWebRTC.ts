@@ -1,6 +1,7 @@
-import { useState , useEffect , useRef , MutableRefObject } from "react";
+import { useState , useEffect , useRef , MutableRefObject  , useCallback} from "react";
 import { Socket } from "socket.io-client";
 import { calculateDistance } from "../utils/distance";
+import { eventNames, off } from "process";
 
 
 export type PlayerPosition = {x : number ; y : number ; username?: string};
@@ -110,56 +111,57 @@ export const useWebRTC = ({
 
 
 
-  // 2. Proximity Radar & Outgoing Calls
-  useEffect(() => {
-    if (!hasJoined || !localStream || !isConnected || !socketRef.current) return;
+  //manual call function
+  //we will export this so page.tsx can trigger it when handshake is accepted
 
-    const createPeerConnection = async (targetId: string) => {
-      if (peersRef.current.has(targetId)) return;
+  const initiateCall = useCallback(async(targetId : string) => {
+    if(!localStream || !socketRef.current || peersRef.current.has(targetId)) return ;
 
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-      });
+    const pc = new RTCPeerConnection({iceServers : [{urls : "stun:stun.l.google.com:19302"}] });
+    peersRef.current.set(targetId , pc);
+    localStream.getTracks().forEach((track) => pc.addTrack(track , localStream));
 
-      peersRef.current.set(targetId, pc);
 
-      localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          socketRef.current?.emit("webrtc-ice-candidate", { targetId, candidate: event.candidate });
-        }
-      };
-
-      pc.ontrack = (event) => {
-        const remoteStream = event.streams[0];
-        const audio = new Audio();
-        audio.srcObject = remoteStream;
-        audio.play().catch((e) => console.error("Audio play failed:", e));
-      };
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      socketRef.current?.emit("webrtc-offer", { targetId, offer });
+    pc.onicecandidate= (event) => {
+      if(event.candidate) {
+        socketRef.current?.emit("webrtc-ice-candidate" , {targetId , candidate : event.candidate});
+      }
     };
 
-    Object.entries(otherPlayers).forEach(([id, player]) => {
-      const dist = calculateDistance(position, player);
 
-      if (dist < PROXIMITY_THRESHOLD) {
-        if (socketRef.current?.id && socketRef.current.id > id) {
-          createPeerConnection(id);
-        }
-      } else {
-        if (peersRef.current.has(id)) {
+    pc.ontrack = (event) => {
+      const audio = new Audio();
+      audio.srcObject = event.streams[0];
+      audio.play().catch((e) => console.error("Audio play failed:" , e));
+
+    };
+
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    socketRef.current?.emit("webrtc-offer" , {targetId , offer});
+
+  }, [localStream , socketRef]);
+
+
+
+  // only use proximity to HANG UP  if they walk away
+  useEffect(() => {
+    if(!hasJoined || !otherPlayers) return ;
+
+    Object.entries(otherPlayers).forEach(([id , player]) => {
+      const dist = calculateDistance(position , player);
+
+      //if they walk away cut the connection
+      if(dist > PROXIMITY_THRESHOLD) {
+        if(peersRef.current.has(id)) {
           peersRef.current.get(id)?.close();
           peersRef.current.delete(id);
         }
       }
     });
-  }, [position, otherPlayers, hasJoined, localStream, isConnected, socketRef]);
-
-  return { initialiseMedia };
+  } , [position , otherPlayers , hasJoined])
+  return { initialiseMedia  , initiateCall};
 
     
 }

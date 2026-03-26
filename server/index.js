@@ -18,6 +18,7 @@ const io = new Server(server , {
 //this is our temp db
 const players = {};
 
+
 io.on('connection' , (socket) => {
   console.log(`User Connected : ${socket.id}`);
 
@@ -70,6 +71,30 @@ io.on('connection' , (socket) => {
       io.emit('newChat' , messageData);
     }
   })
+
+
+  //A wants to talk to B
+  socket.on("askToTalk" , ({targetId , senderName}) => {
+
+    //send private message to target player
+    io.to(targetId).emit("incomingRequest" , {
+      id : socket.id,
+      name : senderName
+    })
+  });
+
+  //B accepts the request
+  socket.on("acceptTalk" , ({targetId}) => {
+    io.to(targetId).emit("requestAccepted" , {
+      id : socket.id
+    });
+
+
+
+    //we will add the RTC bubble logic here
+  })
+
+
 
 
   //webRTC logic 

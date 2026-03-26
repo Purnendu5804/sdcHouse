@@ -1,7 +1,7 @@
 "use client";
 
 import {io , Socket} from "socket.io-client";
-import { useEffect , useRef, useState } from "react";
+import { useEffect , useEffectEvent, useRef, useState } from "react";
 
 import Lobby from "./components/Lobby";
 import GameBoard , {MapObject} from "./components/GameBoard";
@@ -52,6 +52,11 @@ export default function Home () {
   const[selectedColor , setSelectedColor] = useState<string>("#3b82f6");
 
 
+  const[nearbyPlayerId , setNearbyPlayerId] = useState<string | null>(null);
+  const[incomingRequest , setIncomingRequest] = useState<{id : string , name : string} | null> (null);
+  const[outboundRequest , setOutboundRequest] = useState<string | null>(null);    //ye "waiting to answer " show karne ke liye hai
+
+
   useEffect(() => {
     // connect inside the component lifecycle
     socketRef.current = io("http://localhost:3001");
@@ -73,6 +78,13 @@ export default function Home () {
       setMessages((prev) => [...prev , msg]);
     })
 
+    //listen for someone asking to talk to us
+    socketRef.current.on("incomingRequest" , (data : {id : string , name : string}) => {
+      setIncomingRequest(data);
+    });
+
+   
+
     // CRITICAL: Clean up the connection when Next.js reloads the component
     // ye hot fast refresh se connection band karne ke liye
     return () => {
@@ -80,6 +92,8 @@ export default function Home () {
       socketRef.current?.off("newChat");
     };
   } , []);
+
+
 
   // keyboard logic
   const { position , direction} = useBoard({
@@ -93,15 +107,54 @@ export default function Home () {
       socketRef.current?.emit("move" , newPos);
     }
   });
+
+
+
+  useEffect(() => {
+    if(!hasJoined) return;
+
+    let closestPlayerId : string | null = null;
+    let minDistance = PROXIMITY_THRESHOLD;
+
+    //scan all the players
+    Object.entries(otherPlayers).forEach(([id , player]) => {
+      const myPoint = {x : position.x , y : position.y};
+      const theirPoint = {x : player.x , y : player.y};
+      const dist = calculateDistance(myPoint , theirPoint);
+      if(dist < minDistance) {
+        minDistance = dist;
+        closestPlayerId = id
+      }
+    });
+    setNearbyPlayerId(closestPlayerId)
+  } , [position , otherPlayers , hasJoined])
     
   //all the RTC logic (reduced)
-  const { initialiseMedia } = useWebRTC({
+  const { initialiseMedia , initiateCall } = useWebRTC({
     socketRef , 
     isConnected ,
     hasJoined,
     position, 
     otherPlayers
   });
+
+
+
+  //listen for accepted requests 
+  useEffect(() => {
+    if(!socketRef.current) return;
+
+    const handleAccept = (data : {id : string}) => {
+      setOutboundRequest(null);
+      initiateCall(data.id); // this will now correctly have access to localStream
+    };
+
+    socketRef.current.on("requestAccepted" , handleAccept);
+
+    return () => {
+      socketRef.current?.off("requestAccepted" , handleAccept);
+    }
+  } , [initiateCall , socketRef]); // re run the effect safely when localStream is acquired
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-gray-900 text-white font-sans">
@@ -168,6 +221,81 @@ export default function Home () {
               />
             </div>
           )}
+
+          {/* HUD Overlay: Interaction Prompts (Bottom Center) */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-4 items-center pointer-events-none">
+            
+            {/* 1. "Ask to Talk" Prompt */}
+            {nearbyPlayerId && !outboundRequest && !incomingRequest && (
+              <div className="bg-slate-800/95 backdrop-blur-md px-6 py-3 rounded-full border border-slate-600 shadow-2xl flex items-center gap-4 animate-in slide-in-from-bottom-5 pointer-events-auto">
+                <span className="text-sm font-medium text-gray-200">
+                  <span className="text-blue-400 font-bold">{otherPlayers[nearbyPlayerId]?.username}</span> is nearby
+                </span>
+                <button 
+                  onClick={() => {
+                    setOutboundRequest(nearbyPlayerId);
+                    socketRef.current?.emit("askToTalk", { targetId: nearbyPlayerId, senderName: username });
+                  }}
+                  className="bg-white text-gray-900 px-4 py-1.5 rounded-full text-sm font-bold hover:bg-gray-200 transition-colors shadow-sm flex items-center gap-2"
+                >
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  Ask to Talk
+                </button>
+              </div>
+            )}
+
+            {/* 2. "Waiting for response..." State */}
+            {outboundRequest && (
+              <div className="bg-slate-800/95 backdrop-blur-md px-6 py-3 rounded-full border border-slate-600 shadow-2xl flex items-center gap-3 animate-in fade-in pointer-events-auto">
+                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-gray-300">
+                  Waiting for {otherPlayers[outboundRequest]?.username} to accept...
+                </span>
+                <button 
+                  onClick={() => setOutboundRequest(null)}
+                  className="ml-2 text-xs text-red-400 hover:text-red-300 underline"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            {/* 3. "Incoming Request" Toast */}
+            {incomingRequest && (
+              <div className="bg-indigo-600/95 backdrop-blur-md p-4 rounded-2xl border border-indigo-500 shadow-2xl flex flex-col gap-3 animate-in zoom-in-95 pointer-events-auto w-72">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                    📞
+                  </div>
+                  <div>
+                    <p className="text-white font-bold">{incomingRequest.name}</p>
+                    <p className="text-indigo-200 text-xs">wants to join your conversation</p>
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-1">
+                  <button 
+                    onClick={() => {
+                      // We will wire up the actual WebRTC accept logic here later
+                      socketRef.current?.emit("acceptTalk", { targetId: incomingRequest.id });
+                      setIncomingRequest(null);
+                    }}
+                    className="flex-1 bg-white text-indigo-900 py-2 rounded-lg font-bold text-sm hover:bg-gray-100 transition-colors"
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    onClick={() => setIncomingRequest(null)}
+                    className="flex-1 bg-indigo-700 text-white py-2 rounded-lg font-bold text-sm hover:bg-indigo-800 transition-colors border border-indigo-500"
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            )}
+            
+          </div>
+
+
 
           {/* HUD Overlay: Bottom Right (Action Buttons) */}
           <div className="absolute bottom-6 right-6 z-40 flex gap-3">
