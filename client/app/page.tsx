@@ -88,6 +88,7 @@ export default function Home () {
     STEP_SIZE,
     DOT_SIZE,
     hasJoined,
+    mapObjects : MAP_OBJECTS,
     onMove : (newPos) => {
       socketRef.current?.emit("move" , newPos);
     }

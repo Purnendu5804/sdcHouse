@@ -1,15 +1,25 @@
 import { useState , useEffect } from "react";
 
+interface MapObject {
+    id : string;
+    type : string;
+    x : number;
+    y : number;
+    width : number;
+    height : number;
+}
+
 interface UseBoardProps {
     BOARD_WIDTH : number,
     BOARD_HEIGHT : number
     STEP_SIZE : number,
     DOT_SIZE : number,
     onMove : (data : {x : number ; y : number ; direction : string}) => void;
-    hasJoined : boolean
+    hasJoined : boolean,
+    mapObjects : MapObject[]
 }
 
-export const useBoard = ({BOARD_WIDTH, BOARD_HEIGHT ,STEP_SIZE , DOT_SIZE , onMove , hasJoined} : UseBoardProps) => {
+export const useBoard = ({BOARD_WIDTH, BOARD_HEIGHT ,STEP_SIZE , DOT_SIZE , onMove , hasJoined , mapObjects} : UseBoardProps) => {
     // local dot set karne ke liye
     const [position , setPosition] = useState({x : BOARD_WIDTH / 2 , y : BOARD_HEIGHT / 2});
     //which player is facing where
@@ -35,12 +45,36 @@ export const useBoard = ({BOARD_WIDTH, BOARD_HEIGHT ,STEP_SIZE , DOT_SIZE , onMo
 
 
             if(newDir) {
+                const willCollide = mapObjects.some((obj) => {
+                    if(obj.type === 'rug') return false ;
+
+                    return (
+                        newX < obj.x + obj.width &&
+                        newX + DOT_SIZE > obj.x &&
+                        newY < obj.y + obj.height &&
+                        newY + DOT_SIZE > obj.y
+                    );
+                });
+
+                if(willCollide) {   //even if blocked we will update direction so the player faces the object(desk etc.)
+                    setDirection(newDir);
+
+                    if(newDir !== direction) {
+                        onMove({x : prev.x , y : prev.y , direction : newDir});
+                    }
+
+                    return prev; // reject the position change
+                }
+
+                // if no collision proceed normally
+
                 setDirection(newDir);
 
                 if(newX !== prev.x || newY !== prev.y) {
-                    onMove ({x : newX , y : newY , direction : newDir});
+                    onMove({x : newX , y : newY , direction : newDir});
                 }
-                return { x : newX , y : newY};
+
+                return {x : newX , y : newY};
             }
 
             return prev;
