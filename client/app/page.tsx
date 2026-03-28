@@ -9,8 +9,7 @@ import ChatBox , {ChatMessage} from "./components/ChatBox";
 import PlayerList from "./components/PlayerList"; // Make sure to create this component!
 import { calculateDistance } from "./utils/distance";
 import { useBoard } from "./hooks/useBoard";
-import { useWebRTC } from "./hooks/useWebRTC"; // Note: conventionally hooks are lowercase 'useWebRTC'
-
+import { useWebRTC } from "./hooks/useWebRTC"; 
 //constants for out room physics
 const BOARD_WIDTH = 1470;
 const BOARD_HEIGHT = 800;
@@ -161,25 +160,51 @@ export default function Home () {
       
       {/* 1. LOBBY SCREEN OVERLAY */}
       {!hasJoined ? (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gray-900">
-          <div className="mb-8 text-center">
-            <h1 className="text-5xl font-extrabold mb-4 text-blue-400 tracking-tight">sdcHouse</h1>
-            <p className="text-gray-400">Enter your name to join the virtual office.</p>
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 overflow-hidden font-sans">
+          
+          {/* Animated Background Layers */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+          
+          {/* Glowing Orbs */}
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none"></div>
+
+          <div className="relative z-10 mb-10 text-center flex flex-col items-center">
+            
+            {/* Startup Logo Style */}
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.5)] border border-white/20">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white w-8 h-8">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </div>
+              <h1 className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-slate-400 tracking-tight drop-shadow-sm">
+                sdcHouse
+              </h1>
+            </div>
+            
+            <p className="text-slate-400 text-lg max-w-sm font-medium">
+              Your spatial collaboration space for the Software Development Club.
+            </p>
           </div>
-          <Lobby 
-            username={username}
-            setUsername={setUsername}
-            selectedColor={selectedColor}
-            setSelectedColor={setSelectedColor}
-            onJoin={() => {
-              if (username.trim()) {
-                socketRef.current?.emit("join" , {username : username , color : selectedColor});
-                setHasJoined(true);
-                // ask for mic permission right after joining
-                initialiseMedia();
-              }
-            }}
-          />
+          
+          <div className="relative z-10">
+            <Lobby 
+              username={username}
+              setUsername={setUsername}
+              selectedColor={selectedColor}
+              setSelectedColor={setSelectedColor}
+              onJoin={() => {
+                if (username.trim()) {
+                  socketRef.current?.emit("join" , {username : username , color : selectedColor});
+                  setHasJoined(true);
+                  // ask for mic permission right after joining
+                  initialiseMedia();
+                }
+              }}
+            />
+          </div>
         </div>
       ) : (
         
