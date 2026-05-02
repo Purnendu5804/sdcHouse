@@ -29,7 +29,7 @@ const MAP_OBJECTS : MapObject[] = [
   { id: 'rug-1', type: 'rug', x: 350, y: 250, width: 300, height: 200 },
 ];
 
-type PlayerPosition = {x : number , y : number , username?: string , color? : string , direction? : string};
+type PlayerPosition = {x : number , y : number , username?: string , color? : string , direction? : string , isMoving : boolean};
 
 export default function Home () {
   const [isConnected , setIsConnected] = useState<boolean>(false);
@@ -95,7 +95,7 @@ export default function Home () {
 
 
   // keyboard logic
-  const { position , direction} = useBoard({
+  const { position , direction , isMoving} = useBoard({
     BOARD_WIDTH,
     BOARD_HEIGHT,
     STEP_SIZE,
@@ -215,6 +215,7 @@ export default function Home () {
             <GameBoard 
               position={position}
               direction={direction}
+              isMoving={isMoving}
               otherPlayers={otherPlayers}
               username={username}
               boardHeight={BOARD_HEIGHT}

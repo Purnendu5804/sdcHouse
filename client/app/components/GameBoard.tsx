@@ -1,4 +1,5 @@
 import Player from "./Player";
+import SpriteAvatar from "./SpriteAvatar";
 
 
 export interface MapObject {
@@ -13,6 +14,7 @@ export interface MapObject {
 interface GameBoardProps {
   position: { x: number; y: number };
   direction: 'up' | 'down' | 'left' | 'right';
+  isMoving: boolean;
   otherPlayers: Record<string, any>;
   username: string;
   boardWidth : number;
@@ -21,7 +23,7 @@ interface GameBoardProps {
   mapObjects?: MapObject[];
 }
 
-export default function GameBoard({ position, direction, otherPlayers, username, boardHeight , boardWidth, color , mapObjects = [] }: GameBoardProps) {
+export default function GameBoard({ position, direction,isMoving, otherPlayers, username, boardHeight , boardWidth, color , mapObjects = [] }: GameBoardProps) {
   return (
     <div 
       className="relative overflow-hidden border-2 border-slate-700 rounded-xl shadow-2xl"
@@ -64,18 +66,33 @@ export default function GameBoard({ position, direction, otherPlayers, username,
 
       
       {/* Local Player */}
-      <Player position={position} direction={direction} isLocal={true} username={username} color={color} />
+      <div 
+        className="absolute transition-all duration-100 ease-linear z-20"
+        style={{ left: position.x, top: position.y }}
+      >
+        <SpriteAvatar 
+          username={username || "Me"}
+          avatarUrl="/sprites/avatar_2-removebg-preview.png" 
+          direction={direction as 'up' | 'down' | 'left' | 'right'}
+          isMoving={isMoving} 
+        />
+      </div>
+      
 
       {/* Remote Players */}
       {Object.entries(otherPlayers).map(([id, player]) => (
-        <Player 
-          key={id} 
-          position={{ x: player.x, y: player.y }} 
-          direction={player.direction || 'down'} 
-          isLocal={false} 
-          username={player.username || "Unknown"} 
-          color={player.color}
-        />
+        <div 
+          key={id}
+          className="absolute transition-all duration-100 ease-linear z-10"
+          style={{ left: player.x, top: player.y }}
+        >
+          <SpriteAvatar 
+            username={player.username || "Guest"}
+            avatarUrl="/sprites/avatar_2-removebg-preview.png"
+            direction={(player.direction as 'up' | 'down' | 'left' | 'right') || 'down'}
+            isMoving={player.isMoving || false} 
+          />
+        </div>
       ))}
     </div>
   );
