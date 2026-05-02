@@ -27,11 +27,10 @@ io.on('connection' , (socket) => {
   // wait for the user to submit their name from the Lobby , and now they have to submit their color also
   socket.on('join', (userData) => {
     const isObject = typeof userData === "object";
-    const name = isObject ? userData.username : userData;
     players[socket.id] = {
       x : 0,
       y : 0,
-      username : userData.username,
+      username : isObject ? userData.username : userData,
       avatarId : isObject ? userData.avatarId : "avatar_1",
       direction: 'down' //default direction
     };
