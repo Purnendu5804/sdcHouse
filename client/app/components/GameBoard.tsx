@@ -19,11 +19,11 @@ interface GameBoardProps {
   username: string;
   boardWidth : number;
   boardHeight : number;
-  color : string;
+  avatarId : string;
   mapObjects?: MapObject[];
 }
 
-export default function GameBoard({ position, direction,isMoving, otherPlayers, username, boardHeight , boardWidth, color , mapObjects = [] }: GameBoardProps) {
+export default function GameBoard({ position, direction,isMoving, otherPlayers, username, boardHeight , boardWidth, avatarId , mapObjects = [] }: GameBoardProps) {
   return (
     <div 
       className="relative overflow-hidden border-2 border-slate-700 rounded-xl shadow-2xl"
@@ -72,7 +72,7 @@ export default function GameBoard({ position, direction,isMoving, otherPlayers, 
       >
         <SpriteAvatar 
           username={username || "Me"}
-          avatarUrl="/sprites/avatar_2-removebg-preview.png" 
+          avatarUrl={`/sprites/${avatarId}.png`} 
           direction={direction as 'up' | 'down' | 'left' | 'right'}
           isMoving={isMoving} 
         />
@@ -88,7 +88,7 @@ export default function GameBoard({ position, direction,isMoving, otherPlayers, 
         >
           <SpriteAvatar 
             username={player.username || "Guest"}
-            avatarUrl="/sprites/avatar_2-removebg-preview.png"
+            avatarUrl={`/sprites/${player.avatarId || 'avatar_1'}.png`}
             direction={(player.direction as 'up' | 'down' | 'left' | 'right') || 'down'}
             isMoving={player.isMoving || false} 
           />

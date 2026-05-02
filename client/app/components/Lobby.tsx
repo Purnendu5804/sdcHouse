@@ -1,24 +1,22 @@
 import React, { useState } from "react";
 import { ArrowRight, User, Sparkles } from "lucide-react";
 
-const COLORS = [
-  { hex: "#3b82f6", name: "Neon Blue" },
-  { hex: "#10b981", name: "Emerald" },
-  { hex: "#8b5cf6", name: "Purple" },
-  { hex: "#f43f5e", name: "Rose" },
-  { hex: "#f59e0b", name: "Amber" },
-  { hex: "#0ea5e9", name: "Sky" }
-];
+const AVATARS = [
+  {id : "avatar_1" , name : 'avatar1' , src : '/sprites/avatar_1.png'},
+  {id : "avatar_2" , name : 'avatar2' , src : '/sprites/avatar_2.png'},
+  {id : "avatar_3" , name : 'avatar3' , src : '/sprites/avatar_3.png'},
+  {id : "avatar_4" , name : 'avatar4' , src : '/sprites/avatar_4.png'},
+]
 
 type LobbyProps = {
     username : string;
     setUsername : (name : string) => void;
-    selectedColor : string;
-    setSelectedColor : (color : string) => void;
+    selectedAvatar : string;
+    setSelectedAvatar : (id : string) => void;
     onJoin : () => void;
 };
 
-export default function Lobby({ username, setUsername, selectedColor, setSelectedColor, onJoin }: LobbyProps) {
+export default function Lobby({ username, setUsername, selectedAvatar, setSelectedAvatar, onJoin }: LobbyProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -46,39 +44,44 @@ export default function Lobby({ username, setUsername, selectedColor, setSelecte
           </div>
         </div>
 
-        {/* Color Picker */}
+        {/* Avatar Picker */}
         <div className="space-y-3">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
             <Sparkles size={15} className="text-purple-400" />
-            Avatar Color
+            Choose Avatar
           </label>
           <div className="flex justify-between items-center bg-slate-950/50 p-4 rounded-2xl border border-white/5 shadow-inner">
-            {COLORS.map((colorObj) => {
-              const isActive = selectedColor === colorObj.hex;
+            {AVATARS.map((avatar) => {
+              const isActive = selectedAvatar === avatar.id;
               return (
                 <button
-                  key={colorObj.hex}
-                  onClick={() => setSelectedColor(colorObj.hex)}
-                  className="relative group p-1 flex items-center justify-center transition-transform hover:scale-110 outline-none"
-                  title={colorObj.name}
+                  key={avatar.id}
+                  onClick={() => setSelectedAvatar(avatar.id)}
+                  className={`relative group flex items-center justify-center transition-all duration-300 w-12 h-12 rounded-full overflow-hidden border-2 outline-none ${
+                    isActive 
+                      ? 'scale-110 border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
+                      : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105 hover:border-white/30'
+                  }`}
+                  title={avatar.name}
                   type="button"
                 >
-                  {/* Glowing Backdrop */}
+                  {/* Glowing Backdrop for Active */}
                   {isActive && (
-                    <div 
-                      className="absolute inset-0 rounded-full blur-md opacity-70 scale-150"
-                      style={{ backgroundColor: colorObj.hex }}
-                    />
+                    <div className="absolute inset-0 bg-blue-500/20" />
                   )}
-                  {/* Color Circle */}
+                  
+                  {/* The Cropped Sprite "Lens" */}
                   <div 
-                    className={`relative w-8 h-8 rounded-full transition-all duration-300 border-2 shadow-lg ${isActive ? 'scale-110 border-white' : 'border-transparent group-hover:border-white/50'}`}
-                    style={{ backgroundColor: colorObj.hex }}
+                    className="relative z-10"
+                    style={{
+                      backgroundImage: `url(${avatar.src})`,
+                      width: '32px',
+                      height: '32px',
+                      backgroundPosition: '0px 0px', // Forces it to show the first Down-facing frame
+                      backgroundSize: '128px 128px', // Scales your 4x4 grid down perfectly
+                      imageRendering: 'pixelated'
+                    }}
                   />
-                  {/* Inner Dot indicating Active */}
-                  {isActive && (
-                    <div className="absolute w-2.5 h-2.5 bg-white rounded-full shadow-sm z-10" />
-                  )}
                 </button>
               );
             })}

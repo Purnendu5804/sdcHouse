@@ -28,12 +28,11 @@ io.on('connection' , (socket) => {
   socket.on('join', (userData) => {
     const isObject = typeof userData === "object";
     const name = isObject ? userData.username : userData;
-    const color = isObject ? userData.color : "#3b82f6";
     players[socket.id] = {
       x : 0,
       y : 0,
       username : userData.username,
-      color : userData.color,
+      avatarId : isObject ? userData.avatarId : "avatar_1",
       direction: 'down' //default direction
     };
     io.emit('stateUpdate' , players);

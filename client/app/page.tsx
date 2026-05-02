@@ -29,7 +29,7 @@ const MAP_OBJECTS : MapObject[] = [
   { id: 'rug-1', type: 'rug', x: 350, y: 250, width: 300, height: 200 },
 ];
 
-type PlayerPosition = {x : number , y : number , username?: string , color? : string , direction? : string , isMoving : boolean};
+type PlayerPosition = {x : number , y : number , username?: string , avatarId? : string , direction? : string , isMoving : boolean };
 
 export default function Home () {
   const [isConnected , setIsConnected] = useState<boolean>(false);
@@ -48,7 +48,9 @@ export default function Home () {
   const [isChatOpen , setIsChatOpen] = useState<boolean>(false);
   const [isPlayerListOpen , setIsPlayerListOpen] = useState<boolean>(false);
 
-  const[selectedColor , setSelectedColor] = useState<string>("#3b82f6");
+  // const[selectedColor , setSelectedColor] = useState<string>("#3b82f6");
+
+  const[selectedAvatar , setSelectedAvatar] = useState("avatar_1");
 
 
   const[nearbyPlayerId , setNearbyPlayerId] = useState<string | null>(null);
@@ -193,11 +195,11 @@ export default function Home () {
             <Lobby 
               username={username}
               setUsername={setUsername}
-              selectedColor={selectedColor}
-              setSelectedColor={setSelectedColor}
+              selectedAvatar={selectedAvatar}
+              setSelectedAvatar={setSelectedAvatar}
               onJoin={() => {
                 if (username.trim()) {
-                  socketRef.current?.emit("join" , {username : username , color : selectedColor});
+                  socketRef.current?.emit("join" , {username : username , avatarId : selectedAvatar});
                   setHasJoined(true);
                   // ask for mic permission right after joining
                   initialiseMedia();
@@ -220,7 +222,7 @@ export default function Home () {
               username={username}
               boardHeight={BOARD_HEIGHT}
               boardWidth={BOARD_WIDTH}
-              color={selectedColor}
+              avatarId={selectedAvatar}
               mapObjects={MAP_OBJECTS}
             />
           </div>
