@@ -90,7 +90,7 @@ export default function Home() {
 
   useEffect(() => {
     // connect inside the component lifecycle
-    socketRef.current = io("http://localhost:3001");
+    socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001");
     socketRef.current.on("connect", () => setIsConnected(true));
     socketRef.current.on("disconnect", () => setIsConnected(false));
 
