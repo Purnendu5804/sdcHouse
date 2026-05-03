@@ -21,7 +21,7 @@ interface UseBoardProps {
 
 export const useBoard = ({BOARD_WIDTH, BOARD_HEIGHT ,STEP_SIZE , DOT_SIZE , onMove , hasJoined , mapObjects , } : UseBoardProps) => {
     // local dot set karne ke liye
-    const [position , setPosition] = useState({x : BOARD_WIDTH / 2 , y : BOARD_HEIGHT / 2});
+    const [position , setPosition] = useState({ x: 700, y: 700 });
     //which player is facing where
     const [direction , setDirection] = useState<'up' | 'down' | 'left' | 'right'> ('down')
 
