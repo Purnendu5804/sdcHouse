@@ -21,8 +21,6 @@ const PROXIMITY_THRESHOLD = 35;
 export const MAP_OBJECTS: MapObject[] = [
   // center meeting table
   { id: 'center_table', x: 685, y: 350, width: 100, height: 100, type: 'wall', src: '/sprites/Big-Round-Table.png' },
-  { id: 'center_plant1', x: 620, y: 320, width: 40, height: 80, type: 'wall', src: '/sprites/Small-Plant.png' },
-  { id: 'center_plant2', x: 805, y: 400, width: 40, height: 80, type: 'wall', src: '/sprites/Small-Plant.png' },
 
   // dept1 ke liye
   { id: 'desk_tl1', x: 100, y: 150, width: 125, height: 75, type: 'table', src: '/sprites/Desk.png' },
