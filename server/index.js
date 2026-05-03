@@ -8,9 +8,11 @@ app.use(cors());
 
 const server = http.createServer(app);
 
+const PORT = process.env.PORT || 3001;
+
 const io = new Server(server , {
   cors : {
-    origin: "http://localhost:3000",
+    origin: "*",
     methods: ["GET" , "POST"]
   }
 });
@@ -129,6 +131,6 @@ io.on('connection' , (socket) => {
   });
 });
 
-server.listen(3001 , () =>{
+server.listen(PORT , () =>{
   console.log('sdcHouse server running on port 3001');
 }) 
