@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowRight, User, Sparkles } from "lucide-react";
+import { ArrowRight, User, Sparkles, LogOut, ShieldCheck } from "lucide-react";
 
 const AVATARS = [
   {id : "avatar_1" , name : 'avatar1' , src : '/sprites/avatar_1.png'},
@@ -10,13 +10,14 @@ const AVATARS = [
 
 type LobbyProps = {
     username : string;
-    setUsername : (name : string) => void;
+    displayName : string;
     selectedAvatar : string;
     setSelectedAvatar : (id : string) => void;
     onJoin : () => void;
+    onSignOut : () => void;
 };
 
-export default function Lobby({ username, setUsername, selectedAvatar, setSelectedAvatar, onJoin }: LobbyProps) {
+export default function Lobby({ username, displayName, selectedAvatar, setSelectedAvatar, onJoin, onSignOut }: LobbyProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -24,29 +25,49 @@ export default function Lobby({ username, setUsername, selectedAvatar, setSelect
       {/* Subtle top glow within the card */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
 
-      <div className="space-y-8">
-        {/* Username Input */}
-        <div className="space-y-3">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <User size={15} className="text-blue-400" />
-            Display Name
-          </label>
-          <div className="relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition duration-500"></div>
-            <input 
-              type="text" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="How should we call you?"
-              className="relative w-full p-4 rounded-xl bg-slate-950/80 border border-white/10 focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 outline-none text-white placeholder-slate-600 transition-all font-medium text-lg"
-              onKeyDown={(e) => e.key === 'Enter' && onJoin()}
-            />
+      <div className="space-y-6">
+        
+        {/* Sleek User Profile Card Header */}
+        <div className="relative overflow-hidden p-5 rounded-2xl bg-slate-950/70 border border-white/5 shadow-inner group">
+          {/* Subtle hover gradient glow */}
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition duration-500"></div>
+          
+          <div className="relative flex items-center justify-between z-10">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-500/20">
+                <User size={20} className="text-indigo-400" />
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-bold text-white tracking-tight leading-none">
+                    {displayName}
+                  </h3>
+                  <span title="Authenticated Member">
+                    <ShieldCheck size={14} className="text-blue-400" />
+                  </span>
+                </div>
+                <p className="text-xs font-mono font-medium text-slate-500 mt-1">
+                  @{username}
+                </p>
+              </div>
+            </div>
+            
+            {/* Sign Out Button */}
+            <button
+              onClick={onSignOut}
+              className="p-2.5 rounded-xl bg-slate-900 hover:bg-rose-950/30 text-slate-400 hover:text-rose-400 border border-white/5 hover:border-rose-500/20 transition-all cursor-pointer group"
+              title="Sign Out"
+            >
+              <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+            </button>
           </div>
+          
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-blue-500/20"></div>
         </div>
 
         {/* Avatar Picker */}
         <div className="space-y-3">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <label className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 text-left">
             <Sparkles size={15} className="text-purple-400" />
             Choose Avatar
           </label>
@@ -57,7 +78,7 @@ export default function Lobby({ username, setUsername, selectedAvatar, setSelect
                 <button
                   key={avatar.id}
                   onClick={() => setSelectedAvatar(avatar.id)}
-                  className={`relative group flex items-center justify-center transition-all duration-300 w-12 h-12 rounded-full overflow-hidden border-2 outline-none ${
+                  className={`relative group flex items-center justify-center transition-all duration-300 w-12 h-12 rounded-full overflow-hidden border-2 outline-none cursor-pointer ${
                     isActive 
                       ? 'scale-110 border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)]' 
                       : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105 hover:border-white/30'
@@ -95,7 +116,7 @@ export default function Lobby({ username, setUsername, selectedAvatar, setSelect
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             disabled={!username.trim()}
-            className={`relative w-full group overflow-hidden rounded-xl font-bold text-lg transition-all duration-300 ${username.trim() ? 'scale-100 opacity-100' : 'opacity-50 cursor-not-allowed grayscale'}`}
+            className={`relative w-full group overflow-hidden rounded-xl font-bold text-lg transition-all duration-300 cursor-pointer ${username.trim() ? 'scale-100 opacity-100' : 'opacity-50 cursor-not-allowed grayscale'}`}
           >
             {/* Background Gradient */}
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 group-hover:scale-105 transition-transform duration-500"></div>

@@ -10,6 +10,8 @@ import PlayerList from "./components/PlayerList"; // Make sure to create this co
 import { calculateDistance } from "./utils/distance";
 import { useBoard } from "./hooks/useBoard";
 import { useWebRTC } from "./hooks/useWebRTC";
+import Auth from "./components/Auth";
+import { LogOut } from "lucide-react";
 //constants for out room physics
 const BOARD_WIDTH = 1470;
 const BOARD_HEIGHT = 800;
@@ -63,6 +65,42 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
   const [hasJoined, setHasJoined] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<{ username: string; displayName: string } | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState<boolean>(true);
+
+  // Sync auth session from LocalStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSession = localStorage.getItem("sdc_session");
+      if (storedSession) {
+        try {
+          const parsed = JSON.parse(storedSession);
+          if (parsed && parsed.username && parsed.displayName) {
+            setCurrentUser(parsed);
+            setUsername(parsed.username);
+          }
+        } catch (e) {
+          console.error("Failed to parse stored session", e);
+        }
+      }
+      setIsAuthChecking(false);
+    }
+  }, []);
+
+  const handleAuthSuccess = (user: { username: string; displayName: string }) => {
+    setCurrentUser(user);
+    setUsername(user.username);
+  };
+
+  const handleSignOut = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("sdc_session");
+    }
+    setCurrentUser(null);
+    setUsername("");
+    setHasJoined(false);
+    socketRef.current?.emit("disconnect");
+  };
 
 
   // doosre players ko set karne ke liye
@@ -188,21 +226,31 @@ export default function Home() {
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-gray-900 text-white font-sans">
 
-      {/* 1. LOBBY SCREEN OVERLAY */}
-      {!hasJoined ? (
-        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 overflow-hidden font-sans">
+      {isAuthChecking ? (
+        <div className="absolute inset-0 z-[100] flex w-screen h-screen items-center justify-center bg-slate-950 text-white font-sans overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
+          <div className="relative z-10 flex flex-col items-center animate-in fade-in duration-300">
+            <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin mb-4" />
+            <h1 className="text-xl font-bold tracking-tight text-slate-300 animate-pulse">Synchronizing Grid...</h1>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* 1. AUTHENTICATION & LOBBY SCREEN OVERLAY */}
+          {!hasJoined ? (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 overflow-hidden font-sans animate-in fade-in duration-300">
 
           {/* Animated Background Layers */}
           <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
 
           {/* Glowing Orbs */}
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none"></div>
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none animate-pulse duration-[8000ms]"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full mix-blend-screen pointer-events-none animate-pulse duration-[10000ms]"></div>
 
-          <div className="relative z-10 mb-10 text-center flex flex-col items-center">
+          <div className="relative z-10 mb-8 text-center flex flex-col items-center">
 
             {/* Startup Logo Style */}
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex items-center justify-center gap-4 mb-3">
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.5)] border border-white/20">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white w-8 h-8">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -215,25 +263,33 @@ export default function Home() {
             </div>
 
             <p className="text-slate-400 text-lg max-w-sm font-medium">
-              Your spatial collaboration space for the Software Development Club.
+              {!currentUser 
+                ? "Your spatial collaboration space for the Software Development Club."
+                : "Select your avatar identity to join the club house."
+              }
             </p>
           </div>
 
           <div className="relative z-10">
-            <Lobby
-              username={username}
-              setUsername={setUsername}
-              selectedAvatar={selectedAvatar}
-              setSelectedAvatar={setSelectedAvatar}
-              onJoin={() => {
-                if (username.trim()) {
-                  socketRef.current?.emit("join", { username: username, avatarId: selectedAvatar });
-                  setHasJoined(true);
-                  // ask for mic permission right after joining
-                  initialiseMedia();
-                }
-              }}
-            />
+            {!currentUser ? (
+              <Auth onSuccess={handleAuthSuccess} />
+            ) : (
+              <Lobby
+                username={currentUser.username}
+                displayName={currentUser.displayName}
+                selectedAvatar={selectedAvatar}
+                setSelectedAvatar={setSelectedAvatar}
+                onJoin={() => {
+                  if (username.trim()) {
+                    socketRef.current?.emit("join", { username: username, avatarId: selectedAvatar });
+                    setHasJoined(true);
+                    // ask for mic permission right after joining
+                    initialiseMedia();
+                  }
+                }}
+                onSignOut={handleSignOut}
+              />
+            )}
           </div>
         </div>
       ) : (
@@ -267,6 +323,43 @@ export default function Home() {
               </span>
             </div>
           </div>
+
+          {/* HUD Overlay: Top Right (User Profile & Sign Out) */}
+          {currentUser && (
+            <div className="absolute top-4 right-4 z-40 flex items-center gap-3 bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-700 shadow-lg pointer-events-auto">
+              <div className="relative w-8 h-8 rounded-full overflow-hidden border border-white/10 bg-slate-950 flex items-center justify-center shrink-0">
+                <div 
+                  style={{
+                    backgroundImage: `url(/sprites/${selectedAvatar}.png)`,
+                    width: '32px',
+                    height: '32px',
+                    backgroundPosition: '0px 0px',
+                    backgroundSize: '128px 128px',
+                    imageRendering: 'pixelated',
+                    transform: 'scale(0.85)'
+                  }}
+                />
+              </div>
+              <div className="text-left select-none">
+                <p className="text-xs font-bold text-white leading-none">
+                  {currentUser.displayName}
+                </p>
+                <p className="text-[10px] font-mono text-slate-400 mt-0.5">
+                  @{currentUser.username}
+                </p>
+              </div>
+              
+              <div className="w-[1px] h-6 bg-slate-800 self-center mx-1"></div>
+              
+              <button
+                onClick={handleSignOut}
+                className="p-1.5 rounded-lg hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer group"
+                title="Sign Out"
+              >
+                <LogOut size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+            </div>
+          )}
 
           {/* HUD Overlay: Player List (Left Sidebar) */}
           {isPlayerListOpen && (
@@ -387,6 +480,8 @@ export default function Home() {
               />
             </div>
           )}
+        </>
+      )}
         </>
       )}
     </div>
