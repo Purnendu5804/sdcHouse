@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { ArrowRight, User, Sparkles } from "lucide-react";
-import { signIn } from "next-auth/react";
 
 const AVATARS = [
   {id : "avatar_1" , name : 'avatar1' , src : '/sprites/avatar_1.png'},
@@ -92,10 +91,25 @@ export default function Lobby({ username, setUsername, selectedAvatar, setSelect
         {/* Join Button */}
         <div className="pt-2">
           <button 
-            onClick={() => signIn("github")}
-            className="w-full bg-slate-800 text-white p-3 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors"
+            onClick={onJoin}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            disabled={!username.trim()}
+            className={`relative w-full group overflow-hidden rounded-xl font-bold text-lg transition-all duration-300 ${username.trim() ? 'scale-100 opacity-100' : 'opacity-50 cursor-not-allowed grayscale'}`}
           >
-            Sign in with GitHub
+            {/* Background Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 group-hover:scale-105 transition-transform duration-500"></div>
+            
+            {/* Inner glow on hover */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-white mix-blend-overlay transition-opacity duration-300"></div>
+            
+            <div className="relative py-4 px-6 flex items-center justify-center gap-2 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+              <span>Enter Workspace</span>
+              <ArrowRight 
+                size={22} 
+                className={`transition-transform duration-300 ${isHovered && username.trim() ? 'translate-x-1.5' : ''}`} 
+              />
+            </div>
           </button>
         </div>
       </div>
