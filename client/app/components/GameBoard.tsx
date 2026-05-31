@@ -38,6 +38,31 @@ export default function GameBoard({ position, direction, isMoving, otherPlayers,
         imageRendering: "pixelated" as const,
       }}
     >
+      {/* LAYER 1: ZONE FLOORS */}
+      {/* dept1 */}
+      <div className="absolute" style={{ left: 30, top: 120, width: 440, height: 220, zIndex: 1, backgroundImage: "url('/sprites/zone_desk_wood.png')", backgroundRepeat: 'repeat', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* dept2 */}
+      <div className="absolute" style={{ left: 1020, top: 120, width: 510, height: 220, zIndex: 1, backgroundImage: "url('/sprites/zone_desk_wood.png')", backgroundRepeat: 'repeat', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* dept3 */}
+      <div className="absolute" style={{ left: 30, top: 510, width: 440, height: 220, zIndex: 1, backgroundImage: "url('/sprites/zone_desk_wood.png')", backgroundRepeat: 'repeat', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* dept4 */}
+      <div className="absolute" style={{ left: 1020, top: 510, width: 510, height: 220, zIndex: 1, backgroundImage: "url('/sprites/zone_desk_wood.png')", backgroundRepeat: 'repeat', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* meeting */}
+      <div className="absolute" style={{ left: 610, top: 300, width: 210, height: 210, zIndex: 1, backgroundImage: "url('/sprites/zone_meeting_blue.png')", backgroundRepeat: 'repeat', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* lounge */}
+      <div className="absolute" style={{ left: 610, top: 610, width: 260, height: 160, zIndex: 1, backgroundImage: "url('/sprites/zone_lounge_gold.png')", backgroundRepeat: 'repeat', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* coffee */}
+      <div className="absolute" style={{ left: 640, top: 25, width: 220, height: 140, zIndex: 1, backgroundImage: "url('/sprites/zone_hall_gray.png')", backgroundRepeat: 'repeat', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+
+      {/* LAYER 2: WALLS */}
+      {/* Top wall */}
+      <div className="absolute" style={{ left: 0, right: 0, top: 0, height: 32, zIndex: 10, backgroundImage: "url('/sprites/wall_tan_brick.png')", backgroundRepeat: 'repeat-x', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* Bottom wall */}
+      <div className="absolute" style={{ left: 0, right: 0, bottom: 0, height: 32, zIndex: 10, backgroundImage: "url('/sprites/wall_tan_brick.png')", backgroundRepeat: 'repeat-x', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* Left wall */}
+      <div className="absolute" style={{ left: 0, top: 0, bottom: 0, width: 32, zIndex: 10, backgroundImage: "url('/sprites/wall_stone_gray.png')", backgroundRepeat: 'repeat-y', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
+      {/* Right wall */}
+      <div className="absolute" style={{ right: 0, top: 0, bottom: 0, width: 32, zIndex: 10, backgroundImage: "url('/sprites/wall_stone_gray.png')", backgroundRepeat: 'repeat-y', backgroundSize: '32px 32px', imageRendering: 'pixelated' as const }} />
 
       {/* 3. Render Environment Objects BEFORE players so they stay on the floor */}
       {mapObjects.map((obj) => (
