@@ -31,26 +31,11 @@ export default function GameBoard({ position, direction, isMoving, otherPlayers,
       style={{
         width: `${boardWidth}px`,
         height: `${boardHeight}px`,
-        backgroundColor: '#f4f4f5',
-        // Subtle tile/brick: mortar (#e4e4e7) on #f4f4f5, plus faint #e4e4e7 wash for brick variation
-        backgroundImage: `
-          repeating-linear-gradient(0deg,
-            transparent,
-            transparent 27px,
-            #e4e4e7 27px,
-            #e4e4e7 28px),
-          repeating-linear-gradient(90deg,
-            transparent,
-            transparent 62px,
-            #e4e4e7 62px,
-            #e4e4e7 63px),
-          repeating-linear-gradient(180deg,
-            #f4f4f5 0 42px,
-            rgba(228, 228, 231, 0.5) 42px 84px),
-          repeating-linear-gradient(270deg,
-            #f4f4f5 0 20px,
-            rgba(228, 228, 231, 0.38) 20px 40px)
-        `,
+        backgroundColor: '#c8a96e',
+        backgroundImage: "url('/sprites/floor_white_tile.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "32px 32px",
+        imageRendering: "pixelated" as const,
       }}
     >
 

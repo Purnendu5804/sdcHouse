@@ -13,8 +13,8 @@ import { useWebRTC } from "./hooks/useWebRTC";
 import Auth from "./components/Auth";
 import { LogOut } from "lucide-react";
 //constants for out room physics
-const BOARD_WIDTH = 1470;
-const BOARD_HEIGHT = 800;
+const BOARD_WIDTH = typeof window !== 'undefined' ? window.innerWidth : 1470;
+const BOARD_HEIGHT = typeof window !== 'undefined' ? window.innerHeight : 800;
 const DOT_SIZE = 25;
 const STEP_SIZE = 25;
 
