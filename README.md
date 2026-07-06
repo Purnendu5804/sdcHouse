@@ -19,16 +19,16 @@ The application follows a standard Client-Server architecture with peer-to-peer 
 
 ```mermaid
 graph TD
-    subgraph Client [Client-side (Next.js)]
-        UI[User Interface / React]
-        RTC[WebRTC PeerConnection]
-        SockC[Socket.IO Client]
+    subgraph Client ["Client-side (Next.js)"]
+        UI["User Interface / React"]
+        RTC["WebRTC PeerConnection"]
+        SockC["Socket.IO Client"]
     end
 
-    subgraph Server [Server-side (Node.js)]
-        Express[Express.js]
-        SockS[Socket.IO Server]
-        State[(In-Memory State / Players)]
+    subgraph Server ["Server-side (Node.js)"]
+        Express["Express.js"]
+        SockS["Socket.IO Server"]
+        State[("In-Memory State / Players")]
     end
     
     %% Connections
@@ -38,7 +38,7 @@ graph TD
     SockC <--> |WebSocket: Movement, Chat, Signaling| SockS
     SockS <--> |Read/Write| State
     
-    RTC <-.-> |P2P: Audio/Video/Data| RTC2[Other Clients' WebRTC]
+    RTC <-.-> |P2P: Audio/Video/Data| RTC2["Other Clients' WebRTC"]
 ```
 
 ## 🛠️ Technology Stack
